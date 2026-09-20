@@ -1053,6 +1053,10 @@ html[data-tema="escuro"] .botao-tema {
   display: none !important;
 }
 
+.precificador-formulario.mostrar-avancado .campo-contextual-inativo {
+  display: none !important;
+}
+
 .precificador-formulario.mostrar-avancado .campo-avancado.campo-contextual-inativo {
   display: none !important;
 }
@@ -1528,6 +1532,460 @@ html[data-tema="escuro"] #resultadoComposicao .resultado-linha:last-child {
   }
 
   .precificador-modo {
+    display: none !important;
+  }
+}
+
+/* V6 — fluxo compacto inspirado em calculadoras operacionais, com identidade própria. */
+.precificador-modulo {
+  gap: 18px;
+  --preco-painel: #f8faff;
+  --preco-realce: #3157d5;
+}
+
+.precificador-cabecalho {
+  min-height: 138px;
+  padding: 24px 28px;
+}
+
+.precificador-cabecalho h2 {
+  font-size: clamp(26px, 3vw, 34px);
+}
+
+.precificador-abas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  padding: 7px;
+}
+
+.precificador-aba {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 11px 15px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--texto-suave);
+  text-align: left;
+}
+
+.precificador-aba > span:first-child {
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #eef2ff;
+  color: var(--primaria);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.precificador-aba > span:last-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.precificador-aba strong {
+  color: var(--texto);
+  font-size: 14px;
+}
+
+.precificador-aba small {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.precificador-aba:hover {
+  background: #f6f8ff;
+}
+
+.precificador-aba.ativo {
+  border-color: #cbd7ff;
+  background: #edf2ff;
+  color: var(--primaria);
+  box-shadow: inset 0 0 0 1px rgba(49, 87, 213, .04);
+}
+
+.precificador-aba.ativo > span:first-child {
+  background: var(--primaria);
+  color: #fff;
+}
+
+.precificador-grade {
+  display: block;
+}
+
+.precificador-formulario {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.precificador-modo,
+.precificador-acoes {
+  grid-column: 1 / -1;
+}
+
+.precificador-modo {
+  min-height: 64px;
+  margin: 0;
+  padding: 12px 14px;
+  border-style: solid;
+  box-shadow: none;
+}
+
+.precificador-modo strong {
+  font-size: 13px;
+}
+
+.precificador-modo span {
+  font-size: 11px;
+}
+
+.precificador-bloco {
+  padding: 18px;
+  border-radius: 14px;
+  box-shadow: 0 7px 22px rgba(31, 63, 146, .055);
+}
+
+.precificador-bloco-titulo {
+  gap: 10px;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+}
+
+.precificador-bloco-titulo > span {
+  flex-basis: 27px;
+  height: 27px;
+  font-size: 12px;
+}
+
+.precificador-bloco-titulo h3 {
+  font-size: 15px;
+}
+
+.precificador-bloco-titulo p {
+  margin-top: 2px;
+  font-size: 11px;
+}
+
+.preco-campos,
+.preco-duas-colunas,
+.preco-tres-colunas,
+.preco-quatro-colunas {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.preco-campo label {
+  margin-bottom: 5px;
+  font-size: 11px;
+}
+
+.preco-campo > input,
+.preco-campo > select,
+.preco-input-dinheiro,
+.preco-input-percentual,
+.preco-input-unidade {
+  min-height: 40px;
+  border-radius: 8px;
+}
+
+.preco-input-dinheiro input,
+.preco-input-percentual input,
+.preco-input-unidade input,
+.preco-campo > input,
+.preco-campo > select {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  font-size: 13px;
+}
+
+.preco-campo small {
+  font-size: 10px;
+}
+
+#precoRateioCustosFixos.rateio-ativo {
+  color: var(--verde);
+  font-weight: 800;
+}
+
+.campo-contextual-inativo {
+  display: none !important;
+}
+
+.preco-opcoes {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.preco-opcoes label,
+.campo-fba-promocao {
+  padding: 10px;
+  font-size: 11px;
+}
+
+.precificador-acoes {
+  position: sticky;
+  z-index: 12;
+  bottom: 8px;
+  padding: 8px;
+  border: 1px solid var(--borda);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 13px 32px rgba(16, 24, 40, .13);
+  backdrop-filter: blur(10px);
+}
+
+.precificador-resultados {
+  position: static;
+  display: grid;
+  grid-template-columns: minmax(360px, .82fr) minmax(0, 1.18fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.resultado-destaque {
+  min-height: 225px;
+  padding: 23px;
+  border-radius: 15px;
+}
+
+.resultado-preco {
+  margin-top: 12px;
+  font-size: clamp(40px, 6vw, 58px);
+}
+
+.resultado-destaque-resumo {
+  margin-top: auto;
+}
+
+.resultado-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: stretch;
+}
+
+.resultado-card {
+  min-height: 0;
+  padding: 16px;
+}
+
+.resultado-card strong {
+  font-size: 20px;
+}
+
+.resultado-alertas,
+.resultado-detalhes {
+  grid-column: 1 / -1;
+}
+
+.resultado-alertas:empty {
+  display: none;
+}
+
+.resultado-detalhes {
+  padding: 19px;
+}
+
+.resultado-detalhes:has(.comparacao-cards) {
+  order: 4;
+}
+
+.resultado-detalhes:not(:has(.comparacao-cards)) {
+  order: 5;
+}
+
+.resultado-alertas {
+  order: 3;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.comparacao-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.comparacao-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  background: var(--preco-painel);
+}
+
+.comparacao-card.selecionada {
+  border-color: var(--primaria);
+  box-shadow: inset 0 0 0 1px var(--primaria), 0 8px 22px rgba(49, 87, 213, .09);
+}
+
+.comparacao-card-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+}
+
+.comparacao-card-topo strong {
+  font-size: 14px;
+}
+
+.comparacao-card-topo span {
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: #eaf0ff;
+  color: var(--primaria);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.comparacao-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.comparacao-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 7px;
+  border-bottom: 1px dashed var(--borda);
+}
+
+.comparacao-card dt {
+  color: var(--texto-suave);
+  font-size: 10px;
+}
+
+.comparacao-card dd {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.comparacao-card button {
+  width: 100%;
+  min-height: 34px;
+  margin-top: auto;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--cartao);
+  color: var(--primaria);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.comparacao-card button:hover {
+  border-color: var(--primaria);
+  background: #edf2ff;
+}
+
+.precificacoes-salvas {
+  padding: 20px;
+}
+
+html[data-tema="escuro"] .precificador-modulo {
+  --preco-painel: #121d2e;
+}
+
+html[data-tema="escuro"] .precificador-abas,
+html[data-tema="escuro"] .comparacao-card {
+  border-color: #2c3d58;
+  background: #101a2b;
+}
+
+html[data-tema="escuro"] .precificador-aba > span:first-child,
+html[data-tema="escuro"] .comparacao-card-topo span {
+  background: #1d2c50;
+  color: #a9baff;
+}
+
+html[data-tema="escuro"] .precificador-aba:hover,
+html[data-tema="escuro"] .precificador-aba.ativo,
+html[data-tema="escuro"] .comparacao-card button:hover {
+  background: #17243a;
+}
+
+html[data-tema="escuro"] .precificador-aba.ativo {
+  border-color: #4b64a0;
+}
+
+html[data-tema="escuro"] .precificador-aba.ativo > span:first-child {
+  background: var(--primaria);
+  color: #101827;
+}
+
+html[data-tema="escuro"] .precificador-acoes {
+  background: rgba(15, 24, 40, .93);
+}
+
+html[data-tema="escuro"] .comparacao-card button {
+  border-color: #30415d;
+  background: #151e2e;
+}
+
+@media (max-width: 1060px) {
+  .precificador-formulario,
+  .precificador-resultados {
+    grid-template-columns: 1fr;
+  }
+
+  .precificador-modo,
+  .precificador-acoes,
+  .resultado-alertas,
+  .resultado-detalhes {
+    grid-column: 1;
+  }
+
+  .comparacao-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .precificador-abas,
+  .preco-campos,
+  .preco-duas-colunas,
+  .preco-tres-colunas,
+  .preco-quatro-colunas,
+  .resultado-alertas,
+  .comparacao-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .precificador-aba small {
+    overflow: visible;
+    white-space: normal;
+  }
+
+  .precificador-acoes {
+    position: static;
+    grid-template-columns: 1fr;
+  }
+
+  .resultado-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .precificador-abas {
     display: none !important;
   }
 }

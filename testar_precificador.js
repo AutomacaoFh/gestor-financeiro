@@ -52,6 +52,7 @@ const promocaoFba = {
   embalagem: 0,
   preparacao: 0,
   outrosFixos: 0,
+  custosFixosMensais: 0,
   imposto: 0,
   ads: 0,
   reservaDevolucao: 0,
@@ -101,6 +102,7 @@ const base = {
   embalagem: 0,
   preparacao: 0,
   outrosFixos: 0,
+  custosFixosMensais: 0,
   imposto: 0,
   ads: 0,
   reservaDevolucao: 0,
@@ -121,6 +123,44 @@ const cenarios = [
   { ...base, custoProduto: 23, logistica: "fba", peso: 90 },
   { ...base, custoProduto: 20, freteCompra: 5, logistica: "propria", freteProprio: 12, freteCobrado: 8 }
 ];
+
+// Caso real: garrafa a R$ 19, custo de R$ 6,99, DBA de R$ 4,50 e comissão promocional zerada.
+const garrafa = {
+  ...base,
+  custoProduto: 6.99,
+  comissaoZero: true,
+  peso: 200,
+  precoAtual: 19
+};
+const resultadoGarrafa = precificador.calcularCenario(garrafa, 19);
+igual(resultadoGarrafa.logistica.liquida, 4.5);
+igual(resultadoGarrafa.lucro, 7.51);
+igual(resultadoGarrafa.margem, 7.51 / 19 * 100);
+
+const garrafaSemPromocao = precificador.calcularCenario({ ...garrafa, comissaoZero: false }, 19);
+igual(garrafaSemPromocao.comissao, 2.28);
+igual(garrafaSemPromocao.lucro, 5.23);
+
+// Contabilidade e outros custos mensais devem ser rateados pelo volume informado.
+const garrafaComRateio = precificador.calcularCenario({
+  ...garrafa,
+  custosFixosMensais: 200,
+  unidadesMes: 100
+}, 19);
+igual(garrafaComRateio.custosFixosRateados, 2);
+igual(garrafaComRateio.lucro, 5.51);
+
+// Cenário completo com imposto, embalagem, frete de compra e custos fixos.
+const garrafaCompleta = precificador.calcularCenario({
+  ...garrafa,
+  imposto: 4,
+  embalagem: 1,
+  freteCompra: .5,
+  custosFixosMensais: 200,
+  unidadesMes: 100
+}, 19);
+igual(garrafaCompleta.lucro, 3.25);
+igual(garrafaCompleta.margem, 3.25 / 19 * 100);
 
 for (const cenario of cenarios) {
   for (const margemAlvo of [0, 10, 20, 35]) {

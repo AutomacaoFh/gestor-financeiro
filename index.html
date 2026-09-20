@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Gestor financeiro, precificador Amazon e cadastro de fornecedores para pequenas empresas." />
   <title>Gestor do E-commerce</title>
-  <link rel="stylesheet" href="precificador.css?v=3" />
+  <link rel="stylesheet" href="precificador.css?v=6" />
   <link rel="stylesheet" href="fornecedores.css?v=1" />
   <link rel="stylesheet" href="financeiro.css?v=1" />
 
@@ -976,12 +976,23 @@
         </div>
         <div class="precificador-fonte">
           <strong>Base de tarifas</strong>
-          <span>Amazon Brasil · comissões 20/01/2025 · logística 01/08/2025</span>
+          <span>Tabelas-base de 20/01/2025 e 01/08/2025 · conferidas em 20/09/2026</span>
           <a href="https://venda.amazon.com.br/precos" target="_blank" rel="noopener noreferrer">
             Conferir tabela oficial ↗
           </a>
         </div>
       </header>
+
+      <nav class="precificador-abas cartao" aria-label="Modo do precificador">
+        <button class="precificador-aba ativo" type="button" data-preco-modo="precificar" aria-pressed="true">
+          <span aria-hidden="true">$</span>
+          <span><strong>Encontrar preço ideal</strong><small>Calcule o menor preço para atingir sua margem.</small></span>
+        </button>
+        <button class="precificador-aba" type="button" data-preco-modo="analisar" aria-pressed="false">
+          <span aria-hidden="true">✓</span>
+          <span><strong>Conferir preço atual</strong><small>Veja lucro e margem no valor que você já pratica.</small></span>
+        </button>
+      </nav>
 
       <div class="precificador-grade">
         <form id="formPrecificador" class="precificador-formulario" novalidate>
@@ -1011,7 +1022,7 @@
                 <label for="precoNome">Nome do produto</label>
                 <input id="precoNome" type="text" maxlength="120" placeholder="Ex.: Kit com 15 cabides" required />
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoSku">SKU ou ASIN, opcional</label>
                 <input id="precoSku" type="text" maxlength="60" placeholder="Ex.: CABIDE-15" />
               </div>
@@ -1028,7 +1039,7 @@
                   <option value="propria">Logística do vendedor</option>
                 </select>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoPlano">Plano de vendas</label>
                 <select id="precoPlano">
                   <option value="profissional-gratis">Profissional — período gratuito</option>
@@ -1073,10 +1084,15 @@
                 <label for="precoOutrosFixos">Outros custos por unidade</label>
                 <div class="preco-input-dinheiro"><span>R$</span><input id="precoOutrosFixos" type="number" min="0" step="0.01" value="0" /></div>
               </div>
-              <div class="preco-campo campo-avancado">
+              <div class="preco-campo destaque">
+                <label for="precoCustosFixosMensais">Custos fixos mensais</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoCustosFixosMensais" type="number" min="0" step="0.01" value="0" /></div>
+                <small>Contabilidade, sistemas, internet e outras despesas mensais.</small>
+              </div>
+              <div class="preco-campo destaque">
                 <label for="precoUnidadesMes">Vendas estimadas por mês</label>
                 <input id="precoUnidadesMes" type="number" min="1" step="1" value="30" />
-                <small>Usado para ratear a mensalidade do plano.</small>
+                <small id="precoRateioCustosFixos">Nenhum custo fixo rateado.</small>
               </div>
             </div>
           </section>
@@ -1217,14 +1233,14 @@
         <aside class="precificador-resultados">
           <section class="cartao resultado-destaque">
             <div class="resultado-destaque-topo">
-              <div class="resultado-etiqueta">Preço recomendado</div>
+              <div id="resultadoTituloPrincipal" class="resultado-etiqueta">Preço recomendado</div>
               <span class="resultado-automatico"><i></i> Atualização automática</span>
             </div>
             <div id="resultadoPrecoRecomendado" class="resultado-preco">R$ 0,00</div>
             <div id="resultadoMeta" class="resultado-meta">Preencha os custos para calcular.</div>
             <div class="resultado-destaque-resumo">
               <div>
-                <span>Lucro por unidade</span>
+                <span id="resultadoRotuloLucro">Lucro por unidade</span>
                 <strong id="resultadoLucroRecomendado">R$ 0,00</strong>
               </div>
               <div>
@@ -1260,7 +1276,7 @@
 
           <section class="cartao resultado-detalhes">
             <div class="resultado-secao-topo">
-              <h3>Composição do preço recomendado</h3>
+              <h3 id="resultadoTituloComposicao">Composição do preço recomendado</h3>
               <button id="botaoCopiarResumo" class="botao-secundario" type="button">Copiar resumo</button>
             </div>
             <dl id="resultadoComposicao"></dl>
@@ -1269,12 +1285,7 @@
           <section class="cartao resultado-detalhes">
             <h3>Comparação por logística</h3>
             <p class="resultado-ajuda">Use a comparação para decidir a modalidade. Tarifas manuais vazias não são estimadas.</p>
-            <div class="tabela-container tabela-precos">
-              <table>
-                <thead><tr><th>Modalidade</th><th>Tarifa</th><th>Preço sugerido</th><th>Lucro</th></tr></thead>
-                <tbody id="tabelaComparacaoLogistica"></tbody>
-              </table>
-            </div>
+            <div id="tabelaComparacaoLogistica" class="comparacao-cards"></div>
           </section>
         </aside>
       </div>
@@ -2826,7 +2837,7 @@
 
     inicializar();
   </script>
-  <script src="precificador.js?v=3"></script>
+  <script src="precificador.js?v=6"></script>
   <script src="fornecedores.js?v=1"></script>
   <script>
     (() => {

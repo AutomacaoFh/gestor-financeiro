@@ -10,6 +10,9 @@ O site possui tema claro/escuro, opções avançadas recolhidas por padrão, com
 zero promocional e tarifa fixa promocional do FBA configurável (R$ 6,00 por padrão).
 Essas promoções devem ser desmarcadas quando deixarem de valer na conta Amazon.
 
+O precificador oferece os modos **Encontrar preço ideal** e **Conferir preço atual**,
+comparação visual entre modalidades e rateio de custos fixos mensais pelo volume de vendas.
+
 ## Ativação do precificador
 
 1. Abra o SQL Editor do projeto no Supabase.

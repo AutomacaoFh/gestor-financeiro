@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const VERSAO_TARIFAS = "Amazon Brasil: comissões 20/01/2025; logística 01/08/2025";
+  const VERSAO_TARIFAS = "Amazon Brasil: comissões 20/01/2025; logística 01/08/2025; conferido 20/09/2026";
   const TAXA_PARCELAMENTO = 0.015;
 
   const CATEGORIAS = [
@@ -201,7 +201,9 @@
     const logistica = calcularLogistica(d, valorProduto, modalidade, ignorarManual);
     if (logistica.liquida === null) return { valido: false, motivo: "Tarifa logística indisponível para esta combinação." };
     const custoProduto = Math.max(0, numero(d.custoProduto));
-    const custosFixos = custoProduto + Math.max(0, numero(d.freteCompra)) + Math.max(0, numero(d.embalagem)) + Math.max(0, numero(d.preparacao)) + Math.max(0, numero(d.outrosFixos));
+    const custosOperacionais = custoProduto + Math.max(0, numero(d.freteCompra)) + Math.max(0, numero(d.embalagem)) + Math.max(0, numero(d.preparacao)) + Math.max(0, numero(d.outrosFixos));
+    const custosFixosRateados = Math.max(0, numero(d.custosFixosMensais)) / Math.max(1, numero(d.unidadesMes, 1));
+    const custosFixos = custosOperacionais + custosFixosRateados;
     const comissao = calcularComissao(valorProduto, d.categoria, d.comissaoZero, freteRecebido, modalidade, d.comissaoManual);
     const imposto = receita * limitar(d.imposto, 0, 100) / 100;
     const ads = receita * limitar(d.ads, 0, 100) / 100;
@@ -213,7 +215,7 @@
     const fbaExtra = modalidade === "fba" ? Math.max(0, numero(d.custoFbaExtra)) : 0;
     const totalCustos = custosFixos + comissao + logistica.liquida + imposto + ads + devolucoes + cupom + parcelamento + plano + armazenagem + fbaExtra;
     const lucro = receita - totalCustos;
-    return { valido: true, preco: valorProduto, receita, freteRecebido, custoProduto, custosFixos, comissao, logistica, imposto, ads, devolucoes, cupom, parcelamento, plano, armazenagem, fbaExtra, totalCustos, lucro, margem: receita > 0 ? lucro / receita * 100 : 0 };
+    return { valido: true, preco: valorProduto, receita, freteRecebido, custoProduto, custosOperacionais, custosFixosRateados, custosFixos, comissao, logistica, imposto, ads, devolucoes, cupom, parcelamento, plano, armazenagem, fbaExtra, totalCustos, lucro, margem: receita > 0 ? lucro / receita * 100 : 0 };
   }
 
   function buscarPreco(d, margemAlvo = 0, modalidade = d.logistica, ignorarManual = false) {
@@ -259,7 +261,7 @@
     id: $("precoId"), nome: $("precoNome"), sku: $("precoSku"), categoria: $("precoCategoria"),
     logistica: $("precoLogistica"), plano: $("precoPlano"), precoAtual: $("precoAtual"),
     custoProduto: $("precoCustoProduto"), freteCompra: $("precoFreteCompra"), embalagem: $("precoEmbalagem"),
-    preparacao: $("precoPreparacao"), outrosFixos: $("precoOutrosFixos"), unidadesMes: $("precoUnidadesMes"),
+    preparacao: $("precoPreparacao"), outrosFixos: $("precoOutrosFixos"), custosFixosMensais: $("precoCustosFixosMensais"), unidadesMes: $("precoUnidadesMes"),
     margemDesejada: $("precoMargemDesejada"), imposto: $("precoImposto"), comissaoManual: $("precoComissaoManual"), ads: $("precoAds"),
     reservaDevolucao: $("precoReservaDevolucao"), cupom: $("precoCupom"), descontoLogistica: $("precoDescontoLogistica"),
     parcelamento: $("precoParcelamento"), comissaoZero: $("precoComissaoZero"), peso: $("precoPeso"),
@@ -282,11 +284,14 @@
     comparacao: $("tabelaComparacaoLogistica"), salvar: $("botaoSalvarPrecificacao"), limpar: $("botaoLimparPrecificador"),
     copiar: $("botaoCopiarResumo"), filtro: $("filtroPrecificacoes"), tabela: $("tabelaPrecificacoes"),
     vazio: $("estadoVazioPrecificacoes"), avancado: $("botaoOpcoesAvancadas"),
-    campoFbaPromocao: $("campoFbaPromocao")
+    campoFbaPromocao: $("campoFbaPromocao"), rateioCustosFixos: $("precoRateioCustosFixos"),
+    tituloPrincipal: $("resultadoTituloPrincipal"), rotuloLucro: $("resultadoRotuloLucro"),
+    tituloComposicao: $("resultadoTituloComposicao"), modos: [...document.querySelectorAll("[data-preco-modo]")]
   };
   let ultimoResultado;
   let precificacoes = [];
   let tabelaAusenteAvisada = false;
+  let modoCalculo = "precificar";
 
   const moeda = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numero(v));
   const percentual = (v) => `${numero(v).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}%`;
@@ -307,6 +312,7 @@
 
   function preencherDados(d) {
     if (!("fbaPromocional" in d)) campos.fbaPromocional.checked = false;
+    if (!("custosFixosMensais" in d)) campos.custosFixosMensais.value = 0;
     Object.entries(campos).forEach(([chave, el]) => {
       if (!(chave in d)) return;
       if (["parcelamento", "comissaoZero", "fbaPromocional"].includes(chave)) el.checked = Boolean(d[chave]);
@@ -345,7 +351,8 @@
     }
     const linhas = [
       ["Receita da venda", c.receita, "positivo", true],
-      ["Custo do produto e preparação", c.custosFixos, "", true],
+      ["Produto, frete e preparação", c.custosOperacionais, "", true],
+      ["Custos fixos rateados", c.custosFixosRateados],
       ["Comissão Amazon", c.comissao, "", true],
       [`Logística (${c.logistica.origem})`, c.logistica.liquida, "", true],
       ["Desconto logístico", -c.logistica.desconto, "positivo"],
@@ -361,10 +368,23 @@
     ui.comparacao.innerHTML = ["dba", "fba", "onsite", "propria"].map((tipo) => {
       const ignorar = tipo !== d.logistica;
       const recomendado = buscarPreco(d, d.margemDesejada, tipo, ignorar);
-      const cenario = recomendado === null ? null : calcularCenario(d, recomendado, tipo, ignorar);
-      const taxa = calcularLogistica(d, recomendado || d.precoAtual || 0, tipo, ignorar);
-      const indisponivel = recomendado === null || !cenario?.valido;
-      return `<tr class="${tipo === d.logistica ? "linha-selecionada" : ""}"><td><strong>${nomeLogistica(tipo)}</strong>${tipo === d.logistica ? "<small>Selecionada</small>" : ""}</td><td>${taxa.liquida === null ? "Informe a tarifa" : moeda(taxa.liquida)}</td><td>${indisponivel ? "—" : moeda(recomendado)}</td><td>${indisponivel ? "—" : moeda(cenario.lucro)}</td></tr>`;
+      const cenarioRecomendado = recomendado === null ? null : calcularCenario(d, recomendado, tipo, ignorar);
+      const cenarioAtual = d.precoAtual > 0 ? calcularCenario(d, d.precoAtual, tipo, ignorar) : null;
+      const cenario = modoCalculo === "analisar" ? cenarioAtual : cenarioRecomendado;
+      const precoBase = modoCalculo === "analisar" ? d.precoAtual : recomendado;
+      const taxa = calcularLogistica(d, precoBase || 0, tipo, ignorar);
+      const indisponivel = !cenario?.valido || precoBase === null || precoBase <= 0;
+      const selecionada = tipo === d.logistica;
+      return `<article class="comparacao-card ${selecionada ? "selecionada" : ""}">
+        <div class="comparacao-card-topo"><strong>${nomeLogistica(tipo)}</strong>${selecionada ? "<span>Selecionada</span>" : ""}</div>
+        <dl>
+          <div><dt>Tarifa logística</dt><dd>${taxa.liquida === null ? "Informe a tarifa" : moeda(taxa.liquida)}</dd></div>
+          <div><dt>${modoCalculo === "analisar" ? "Preço analisado" : "Preço sugerido"}</dt><dd>${indisponivel ? "—" : moeda(precoBase)}</dd></div>
+          <div><dt>Lucro por unidade</dt><dd class="${!indisponivel && cenario.lucro < 0 ? "negativo" : "positivo"}">${indisponivel ? "—" : moeda(cenario.lucro)}</dd></div>
+          <div><dt>Margem líquida</dt><dd>${indisponivel ? "—" : percentual(cenario.margem)}</dd></div>
+        </dl>
+        ${selecionada ? "" : `<button type="button" data-logistica="${tipo}">Usar esta modalidade</button>`}
+      </article>`;
     }).join("");
   }
 
@@ -375,20 +395,32 @@
     const recomendado = buscarPreco(d, d.margemDesejada);
     const atual = calcularCenario(d, d.precoAtual > 0 ? d.precoAtual : recomendado || 0);
     const cenarioRecomendado = recomendado === null ? null : calcularCenario(d, recomendado);
-    ultimoResultado = { dados: d, peso, equilibrio, recomendado, atual, cenarioRecomendado };
-    ui.recomendado.textContent = recomendado === null ? "Indisponível" : moeda(recomendado);
-    ui.meta.textContent = recomendado === null ? "Revise os campos indicados nos alertas." : `Para obter ${percentual(d.margemDesejada)} de margem líquida em ${nomeLogistica(d.logistica)}.`;
-    ui.lucroRecomendado.textContent = cenarioRecomendado?.valido ? moeda(cenarioRecomendado.lucro) : "—";
-    ui.comissaoRecomendada.textContent = cenarioRecomendado?.valido ? moeda(cenarioRecomendado.comissao) : "—";
-    ui.logisticaRecomendada.textContent = cenarioRecomendado?.valido ? moeda(cenarioRecomendado.logistica.liquida) : "—";
+    const analisandoAtual = modoCalculo === "analisar";
+    const cenarioPrincipal = analisandoAtual && d.precoAtual > 0 ? atual : cenarioRecomendado;
+    ultimoResultado = { dados: d, peso, equilibrio, recomendado, atual, cenarioRecomendado, cenarioPrincipal };
+    ui.tituloPrincipal.textContent = analisandoAtual ? "Preço analisado" : "Preço recomendado";
+    ui.rotuloLucro.textContent = analisandoAtual ? "Lucro real estimado" : "Lucro por unidade";
+    ui.tituloComposicao.textContent = analisandoAtual ? "Composição do preço atual" : "Composição do preço recomendado";
+    ui.recomendado.textContent = analisandoAtual
+      ? (d.precoAtual > 0 ? moeda(d.precoAtual) : "Informe o preço")
+      : (recomendado === null ? "Indisponível" : moeda(recomendado));
+    ui.meta.textContent = analisandoAtual
+      ? (d.precoAtual <= 0 ? "Preencha o preço atual para conferir lucro e margem." : atual.valido ? `${atual.lucro >= 0 ? "Lucro" : "Prejuízo"} de ${moeda(Math.abs(atual.lucro))} por unidade · margem de ${percentual(atual.margem)}.` : "Revise os campos indicados nos alertas.")
+      : (recomendado === null ? "Revise os campos indicados nos alertas." : `Para obter ${percentual(d.margemDesejada)} de margem líquida em ${nomeLogistica(d.logistica)}.`);
+    ui.lucroRecomendado.textContent = cenarioPrincipal?.valido ? moeda(cenarioPrincipal.lucro) : "—";
+    ui.comissaoRecomendada.textContent = cenarioPrincipal?.valido ? moeda(cenarioPrincipal.comissao) : "—";
+    ui.logisticaRecomendada.textContent = cenarioPrincipal?.valido ? moeda(cenarioPrincipal.logistica.liquida) : "—";
     ui.equilibrio.textContent = equilibrio === null ? "—" : moeda(equilibrio);
     ui.lucro.textContent = d.precoAtual <= 0 ? "—" : atual.valido ? moeda(atual.lucro) : "—";
     ui.lucro.classList.toggle("negativo", Boolean(d.precoAtual > 0 && atual.valido && atual.lucro < 0));
     ui.margem.textContent = d.precoAtual <= 0 ? "Informe o preço atual" : atual.valido ? `Margem de ${percentual(atual.margem)}` : "Não calculada";
     ui.peso.textContent = peso.tarifavel < 1 ? `${Math.round(peso.tarifavel * 1000)} g` : `${peso.tarifavel.toLocaleString("pt-BR", { maximumFractionDigits: 3 })} kg`;
     ui.tipoPeso.textContent = peso.tipo;
+    const rateio = Math.max(0, numero(d.custosFixosMensais)) / Math.max(1, numero(d.unidadesMes, 1));
+    ui.rateioCustosFixos.textContent = rateio > 0 ? `${moeda(rateio)} incluídos em cada unidade.` : "Nenhum custo fixo rateado.";
+    ui.rateioCustosFixos.classList.toggle("rateio-ativo", rateio > 0);
     ui.alertas.innerHTML = criarAlertas(d, atual, recomendado, peso).map(([tipo, texto]) => `<div class="resultado-alerta ${tipo}">${escapar(texto)}</div>`).join("");
-    renderizarComposicao(cenarioRecomendado);
+    renderizarComposicao(cenarioPrincipal);
     renderizarComparacao(d);
     return ultimoResultado;
   }
@@ -421,6 +453,7 @@
     campos.peso.value = 200;
     campos.pesoEmbalagem.value = 20;
     campos.unidadesMes.value = 30;
+    campos.custosFixosMensais.value = 0;
     campos.margemDesejada.value = 20;
     campos.mesesEstoque.value = 1;
     campos.tarifaFbaPromocional.value = 6;
@@ -510,11 +543,13 @@
 
   async function copiarResumo() {
     const r = calcularEExibir();
-    if (r.recomendado === null || !r.cenarioRecomendado?.valido) return;
-    const c = r.cenarioRecomendado;
+    const analisandoAtual = modoCalculo === "analisar" && r.dados.precoAtual > 0;
+    const c = analisandoAtual ? r.atual : r.cenarioRecomendado;
+    if (!c?.valido || (!analisandoAtual && r.recomendado === null)) return;
     const texto = [
       `PRECIFICAÇÃO — ${r.dados.nome || "Produto"}`,
       `Modalidade: ${nomeLogistica(r.dados.logistica)}`,
+      ...(analisandoAtual ? [`Preço analisado: ${moeda(r.dados.precoAtual)}`] : []),
       `Preço recomendado: ${moeda(r.recomendado)}`,
       `Preço de equilíbrio: ${moeda(r.equilibrio)}`,
       `Lucro estimado: ${moeda(c.lucro)} (${percentual(c.margem)})`,
@@ -559,10 +594,28 @@
     calcularEExibir();
   });
   ui.avancado.addEventListener("click", () => definirAvancado(!ui.form.classList.contains("mostrar-avancado")));
+  ui.modos.forEach((botao) => botao.addEventListener("click", () => {
+    modoCalculo = botao.dataset.precoModo === "analisar" ? "analisar" : "precificar";
+    ui.modos.forEach((item) => {
+      const ativo = item === botao;
+      item.classList.toggle("ativo", ativo);
+      item.setAttribute("aria-pressed", String(ativo));
+    });
+    ui.form.dataset.modo = modoCalculo;
+    calcularEExibir();
+    if (modoCalculo === "analisar" && campos.precoAtual.value <= 0) campos.precoAtual.focus();
+  }));
   ui.salvar.addEventListener("click", salvarPrecificacao);
   ui.limpar.addEventListener("click", limparFormulario);
   ui.copiar.addEventListener("click", copiarResumo);
   ui.filtro.addEventListener("input", renderizarSalvos);
+  ui.comparacao.addEventListener("click", (e) => {
+    const botao = e.target.closest("button[data-logistica]");
+    if (!botao) return;
+    campos.logistica.value = botao.dataset.logistica;
+    atualizarCamposLogistica();
+    calcularEExibir();
+  });
   ui.tabela.addEventListener("click", (e) => {
     const botao = e.target.closest("button[data-acao]");
     if (!botao) return;
@@ -571,6 +624,7 @@
   });
 
   definirAvancado(false);
+  ui.form.dataset.modo = modoCalculo;
   atualizarCamposLogistica();
   calcularEExibir();
   setTimeout(carregarPrecificacoes, 1200);
