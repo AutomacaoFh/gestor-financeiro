@@ -42,3 +42,4 @@ create policy "Usuario exclui proprias precificacoes"
 
 comment on table public.precificacoes is
   'Cenarios de precificacao Amazon salvos por cada usuario do gestor.';
+

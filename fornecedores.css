@@ -467,3 +467,55 @@ html[data-tema="escuro"] .fornecedor-campo textarea::placeholder {
     display: block;
   }
 }
+
+
+/* Lista compacta; formulário aberto apenas por Novo ou Editar. */
+#moduloFornecedores { gap: 14px; }
+.fornecedores-cabecalho { padding: 0; border: 0; background: transparent; box-shadow: none; }
+.fornecedores-cabecalho > div { min-width: 0; }
+.fornecedores-cabecalho h2 { font-size: 26px; letter-spacing: -.5px; }
+.fornecedores-cabecalho p { font-size: 13px; }
+.fornecedores-cabecalho .fornecedor-novo-topo { width: auto; flex: 0 0 auto; min-height: 44px; font-size: 13px; }
+.fornecedores-resumo { gap: 0; border: 1px solid var(--borda); border-radius: 12px; overflow: hidden; }
+.fornecedor-resumo-card { border: 0; border-radius: 0; box-shadow: none; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fornecedor-resumo-card + .fornecedor-resumo-card { border-left: 1px solid var(--borda); }
+.fornecedor-resumo-card span { font-size: 12px; font-weight: 400; }
+.fornecedor-resumo-card strong { font-size: 21px; }
+.fornecedores-grade { grid-template-columns: 1fr; }
+.fornecedores-grade.editando { grid-template-columns: minmax(310px, .85fr) minmax(0, 1.35fr); }
+.fornecedor-formulario { position: static; box-shadow: none; }
+.fornecedor-formulario, .fornecedores-lista-painel { padding: 18px; min-width: 0; }
+.fornecedores-lista-painel { box-shadow: none; }
+.fornecedores-lista-topo { flex-wrap: wrap; align-items: center; gap: 12px; }
+.fornecedores-lista-topo p { display: none; }
+.fornecedores-lista-topo h3 { font-size: 16px; margin: 0; }
+.fornecedores-filtros { grid-template-columns: minmax(0, 1fr) 145px; width: min(100%, 430px); }
+.fornecedor-card { padding: 16px; }
+.fornecedor-card.preferencial { border-color: var(--borda) !important; box-shadow: none; }
+.fornecedor-card-identidade h4 { font-size: 16px; }
+.fornecedor-local { font-size: 12px; color: var(--texto-suave); margin: 7px 0 0; }
+.fornecedor-produtos { background: transparent; padding: 0; color: var(--texto-suave); overflow-wrap: anywhere; }
+.fornecedor-observacoes { overflow-wrap: anywhere; }
+.fornecedor-mais { margin-top: 10px; }
+.fornecedor-mais summary { color: var(--texto-suave); font-size: 12px; cursor: pointer; min-height: 36px; padding: 9px 0; }
+.fornecedor-card-acoes { margin-top: 10px; }
+.fornecedor-card-acoes a, .fornecedor-card-acoes button { display: inline-flex; align-items: center; min-height: 40px; font-size: 12px; }
+.fornecedor-card-acoes .fornecedor-excluir { margin-left: auto; color: var(--texto-suave); }
+.fornecedor-preferencial { background: transparent !important; border-color: var(--borda) !important; color: var(--texto) !important; }
+.fornecedor-acoes-formulario .botao-principal { width: auto; }
+@media (max-width: 980px) {
+  .fornecedores-grade.editando { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .fornecedores-resumo { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fornecedor-resumo-card { display: grid; gap: 5px; padding: 12px; }
+  .fornecedor-resumo-card span { font-size: 11px; }
+  .fornecedores-cabecalho .fornecedor-novo-topo { align-self: flex-start; }
+  .fornecedores-filtros { grid-template-columns: minmax(0, 1fr) 125px; }
+  .fornecedor-card-topo { flex-wrap: wrap; gap: 8px; }
+  .fornecedor-formulario, .fornecedores-lista-painel { padding: 14px; }
+  .fornecedor-campo > input, .fornecedor-campo select, .fornecedor-campo textarea, .fornecedores-filtros input, .fornecedores-filtros select { font-size: 16px; min-height: 46px; }
+  .fornecedor-card-acoes a, .fornecedor-card-acoes button { min-height: 44px; }
+  .fornecedor-campo > textarea { min-height: 75px; }
+  .fornecedor-card-detalhes { grid-template-columns: 1fr 1fr; }
+}

@@ -115,11 +115,25 @@
     ui.status.value = "ativo";
     ui.tituloForm.textContent = "Novo fornecedor";
     ui.salvar.textContent = "Salvar fornecedor";
-    ui.cancelar.classList.add("oculto");
+    ui.cancelar.classList.remove("oculto");
+    $("detalhesFornecedor").open = false;
     if (focar) {
+      abrirFormulario();
       ui.form.scrollIntoView({ behavior: "smooth", block: "start" });
       setTimeout(() => ui.nome.focus(), 250);
     }
+  }
+
+  function abrirFormulario() {
+    ui.form.classList.remove("oculto");
+    $("gradeFornecedores").classList.add("editando");
+    ui.novoTopo.setAttribute("aria-expanded", "true");
+  }
+
+  function fecharFormulario() {
+    ui.form.classList.add("oculto");
+    $("gradeFornecedores").classList.remove("editando");
+    ui.novoTopo.setAttribute("aria-expanded", "false");
   }
 
   function atualizarResumo() {
@@ -165,26 +179,27 @@
         site ? `<a href="${escapar(site)}" target="_blank" rel="noopener noreferrer">Abrir site</a>` : ""
       ].join("");
 
+      const detalhes = [
+        item.contato && detalheHtml("Contato", item.contato),
+        item.whatsapp && detalheHtml("Telefone", item.whatsapp),
+        Number(item.pedido_minimo) > 0 && detalheHtml("Pedido mínimo", pedido),
+        item.ultima_compra && detalheHtml("Última compra", formatarData(item.ultima_compra)),
+        item.prazo && detalheHtml("Entrega", item.prazo),
+        item.pagamento && detalheHtml("Pagamento", item.pagamento),
+        item.frete && detalheHtml("Frete", item.frete)
+      ].filter(Boolean).join("");
       return `<article class="fornecedor-card ${item.preferencial ? "preferencial" : ""}">
         <div class="fornecedor-card-topo">
           <div class="fornecedor-card-identidade">
-            ${item.preferencial ? '<span class="fornecedor-estrela" title="Fornecedor preferencial" aria-label="Fornecedor preferencial">★</span>' : ""}
+            ${item.preferencial ? '<span class="fornecedor-estrela" title="Preferencial" aria-label="Fornecedor preferencial">★</span>' : ""}
             <h4>${escapar(item.nome)}</h4>
             <span class="fornecedor-status ${escapar(item.status)}">${escapar(nomeStatus(item.status))}</span>
           </div>
-          <span class="fornecedor-avaliacao" aria-label="Avaliação: ${escapar(estrelas)}">${escapar(estrelas)}</span>
+          ${item.avaliacao > 0 ? `<span class="fornecedor-avaliacao" aria-label="Avaliação: ${escapar(estrelas)}">${escapar(estrelas)}</span>` : ""}
         </div>
-        <div class="fornecedor-card-detalhes">
-          ${detalheHtml("Contato", contato)}
-          ${detalheHtml("Local", local)}
-          ${detalheHtml("Pedido mínimo", pedido)}
-          ${detalheHtml("Última compra", formatarData(item.ultima_compra))}
-          ${detalheHtml("Prazo de entrega", textoOuPadrao(item.prazo))}
-          ${detalheHtml("Pagamento", textoOuPadrao(item.pagamento))}
-          ${detalheHtml("Frete", textoOuPadrao(item.frete))}
-        </div>
-        ${item.produtos ? `<p class="fornecedor-produtos"><strong>Produtos:</strong> ${escapar(item.produtos)}</p>` : ""}
-        ${item.observacoes ? `<p class="fornecedor-observacoes">${escapar(item.observacoes)}</p>` : ""}
+        ${item.cidade || item.estado ? `<p class="fornecedor-local">${escapar(local)}</p>` : ""}
+        ${item.produtos ? `<p class="fornecedor-produtos">${escapar(item.produtos)}</p>` : ""}
+        ${detalhes || item.observacoes ? `<details class="fornecedor-mais"><summary>Ver condições e observações</summary><div class="fornecedor-card-detalhes">${detalhes}</div>${item.observacoes ? `<p class="fornecedor-observacoes">${escapar(item.observacoes)}</p>` : ""}</details>` : ""}
         <div class="fornecedor-card-acoes">
           ${acoesContato}
           <button type="button" data-acao-fornecedor="editar" data-id="${escapar(item.id)}">Editar</button>
@@ -249,18 +264,21 @@
       consulta = supabase.from("fornecedores")
         .insert({ ...dados, user_id: usuario.id });
     }
-    const { error } = await consulta;
-    ui.salvar.disabled = false;
+    let error;
+    try { ({ error } = await consulta); }
+    catch (erro) { error = erro; }
+    finally { ui.salvar.disabled = false; }
 
     if (error) {
       console.error("Erro ao salvar fornecedor:", error);
       ui.salvar.textContent = ui.id.value ? "Salvar alterações" : "Salvar fornecedor";
-      avisar("Não foi possível salvar. Confirme se o SQL de fornecedores foi executado.");
+      avisar("Não foi possível salvar. Os campos foram mantidos; confira a conexão e tente novamente.");
       return;
     }
 
     const estavaEditando = Boolean(ui.id.value);
     limparFormulario();
+    fecharFormulario();
     usuarioCarregadoId = null;
     await carregarFornecedores(true);
     avisar(estavaEditando ? "Fornecedor atualizado." : "Fornecedor cadastrado.");
@@ -269,6 +287,7 @@
   function editarFornecedor(id) {
     const item = fornecedores.find((fornecedor) => fornecedor.id === id);
     if (!item) return;
+    abrirFormulario();
     ui.id.value = item.id;
     ui.nome.value = item.nome || "";
     ui.status.value = item.status || "ativo";
@@ -289,6 +308,7 @@
     ui.tituloForm.textContent = "Editar fornecedor";
     ui.salvar.textContent = "Salvar alterações";
     ui.cancelar.classList.remove("oculto");
+    $("detalhesFornecedor").open = false;
     ui.form.scrollIntoView({ behavior: "smooth", block: "start" });
     setTimeout(() => ui.nome.focus(), 250);
   }
@@ -312,8 +332,9 @@
     avisar("Fornecedor excluído.");
   }
 
-  ui.form.addEventListener("submit", salvarFornecedor);
-  ui.cancelar.addEventListener("click", () => limparFormulario());
+  const reportarErro = (erro) => { console.error("Erro na operação de fornecedores:", erro); avisar("Não foi possível concluir. Confira sua conexão; seus campos foram mantidos."); };
+  ui.form.addEventListener("submit", (e) => salvarFornecedor(e).catch(reportarErro));
+  ui.cancelar.addEventListener("click", () => { fecharFormulario(); ui.novoTopo.focus(); });
   ui.novoTopo.addEventListener("click", () => limparFormulario(true));
   ui.busca.addEventListener("input", renderizar);
   ui.filtroStatus.addEventListener("change", renderizar);
@@ -321,13 +342,16 @@
     const botao = evento.target.closest("button[data-acao-fornecedor]");
     if (!botao) return;
     if (botao.dataset.acaoFornecedor === "editar") editarFornecedor(botao.dataset.id);
-    if (botao.dataset.acaoFornecedor === "excluir") excluirFornecedor(botao.dataset.id);
+    if (botao.dataset.acaoFornecedor === "excluir") excluirFornecedor(botao.dataset.id).catch(reportarErro);
   });
   document.addEventListener("moduloalterado", (evento) => {
-    if (evento.detail?.modulo === "fornecedores") carregarFornecedores(true);
+    if (evento.detail?.modulo === "fornecedores") carregarFornecedores(true).catch(reportarErro);
   });
 
   limparFormulario();
   renderizar();
-  setTimeout(() => carregarFornecedores(), 1400);
+  ui.novoTopo.setAttribute("aria-controls", "formFornecedor");
+  fecharFormulario();
+  setTimeout(() => carregarFornecedores().catch(reportarErro), 1400);
 })();
+

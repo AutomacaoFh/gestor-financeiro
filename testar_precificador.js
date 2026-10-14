@@ -34,6 +34,9 @@ igual(precificador.calcularTarifaFba(170, 11), 54.55);
 assert.strictEqual(precificador.calcularTarifaFba(200, 22), null);
 
 const promocaoFba = {
+  dataReferencia: "2026-10-12",
+  comissaoZeroAte: "2026-12-01",
+  fbaPromocaoMes: "2026-10",
   logistica: "fba",
   categoria: "casa",
   comissaoManual: "",
@@ -67,10 +70,10 @@ const promocaoFba = {
   tarifaOnsite: 0
 };
 const resultadoPromocaoFba = precificador.calcularCenario(promocaoFba, 30);
-igual(resultadoPromocaoFba.logistica.liquida, 6);
+igual(resultadoPromocaoFba.logistica.liquida, 5.85);
 igual(resultadoPromocaoFba.comissao, 0);
-igual(precificador.buscarPreco(promocaoFba, 20), 20);
-igual(precificador.calcularCenario({ ...promocaoFba, descontoLogistica: 50 }, 30).logistica.liquida, 6);
+igual(precificador.buscarPreco(promocaoFba, 20), 19.57);
+igual(precificador.calcularCenario({ ...promocaoFba, descontoLogistica: 50, descontoLogisticaAte: "2026-10-31" }, 30).logistica.liquida, 5.85);
 igual(precificador.calcularCenario({ ...promocaoFba, tarifaManual: 8 }, 30).logistica.liquida, 8);
 
 // Peso dimensional deve prevalecer quando for maior.
@@ -85,6 +88,8 @@ igual(peso.real, 0.52);
 igual(peso.dimensional, 12.02);
 
 const base = {
+  dataReferencia: "2026-10-12",
+  comissaoZeroAte: "2026-12-01",
   logistica: "dba",
   categoria: "casa",
   comissaoManual: "",
@@ -176,4 +181,47 @@ for (const cenario of cenarios) {
   }
 }
 
-console.log("Todos os testes do precificador passaram.");
+
+
+// Regras oficiais confirmadas em 12/10/2026 e retrocompatibilidade.
+igual(precificador.calcularTarifaDba(149.99, 11), 55.80);
+igual(precificador.calcularTarifaDba(150, 11), 62.50);
+igual(precificador.calcularTarifaDba(199.99, 12), 66);
+igual(precificador.calcularTarifaDba(200, 11), 69.95);
+assert.strictEqual(precificador.calcularTarifaDba(19, 30), null);
+igual(precificador.calcularCenario(promocaoFba, 78.99).logistica.liquida, 6.05);
+igual(precificador.calcularCenario(promocaoFba, 79).logistica.liquida, 6);
+igual(precificador.calcularCenario({...promocaoFba, fbaPromocaoMes: '2026-09'}, 79).logistica.liquida, 12.05);
+igual(precificador.calcularCenario({...promocaoFba, fbaPromocaoMes: '2027-02', dataReferencia: '2027-02-01'}, 79).logistica.liquida, 12.05);
+igual(precificador.calcularCenario({...promocaoFba, mesesEstoque: 2}, 50).armazenagem, 0);
+assert(precificador.calcularCenario({...promocaoFba, mesesEstoque: 2, fbaPromocaoMes: ''}, 50).armazenagem > 0);
+igual(precificador.calcularCenario({...base, comissaoZero: true, comissaoZeroAte: ''}, 19).comissao, 2.28);
+igual(precificador.calcularCenario({...base, comissaoZero: true, comissaoZeroAte: '2026-10-11'}, 19).comissao, 2.28);
+igual(precificador.calcularCenario({...base, comissaoZero: true, comissaoZeroAte: '2026-10-12'}, 19).comissao, 0);
+assert(precificador.calcularCenario({...base, logistica: 'propria', comissaoZero: true}, 19).comissao > 0);
+igual(precificador.calcularCenario({...base, descontoLogistica: 50, descontoLogisticaAte: ''}, 100).logistica.liquida, 13.95);
+igual(precificador.calcularCenario({...base, descontoLogistica: 50, descontoLogisticaAte: '2026-10-31'}, 100).logistica.liquida, 6.975);
+igual(precificador.calcularCenario({...base, tarifaManual: 6, descontoLogistica: 50, descontoLogisticaAte: '2026-10-31'}, 100).logistica.liquida, 6);
+const custosAntigos = {...base, freteCompra: 1.1, embalagem: 2.2, preparacao: 3.3, outrosFixos: 4.4};
+igual(precificador.calcularCenario(custosAntigos, 50).custosOperacionais, 21);
+igual(precificador.calcularCenario({...custosAntigos, modoDespesas: 'total', despesasUnidade: 5}, 50).custosOperacionais, 15);
+igual(precificador.calcularCenario({...custosAntigos, modoDespesas: 'detalhado', despesasUnidade: 5}, 50).custosOperacionais, 21);
+assert.strictEqual(precificador.calcularCenario({...base, custosFixosMensais: 100, unidadesMes: 0}, 50).valido, false);
+assert.strictEqual(precificador.calcularCenario({...base, logistica: 'propria', freteProprio: ''}, 50).valido, false);
+// Busca em centavos confrontada com força bruta: degraus de tarifas e comissão mínima.
+for (const custo of [6.99, 18, 37, 51, 63]) {
+  for (const logistica of ['dba', 'fba']) {
+    const d={...promocaoFba, custoProduto: custo, logistica, imposto: 4, ads: 3.5};
+    const resultado=precificador.buscarPreco(d, 25);
+    let esperado=null;
+    for(let centavos=1;centavos<=25000;centavos++) {
+      const c=precificador.calcularCenario(d,centavos/100);
+      if(c.valido && c.margem >= 25-1e-8){esperado=centavos/100;break;}
+    }
+    igual(resultado, esperado);
+  }
+}
+console.log('Testes aprovados: tarifas, promoções, custos legados, rateio e menor preço em centavos.');
+// Os 20 g obrigatórios de embalagem FBA não podem ser removidos pelo formulário.
+igual(precificador.obterPesoTarifavel({logistica:'fba',peso:500,pesoEmbalagem:0}).real,.52);
+igual(precificador.obterPesoTarifavel({logistica:'dba',peso:500,pesoEmbalagem:10}).real,.51);

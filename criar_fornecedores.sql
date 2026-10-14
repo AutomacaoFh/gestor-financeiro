@@ -63,3 +63,4 @@ create policy "fornecedores_excluir_proprios"
   using ((select auth.uid()) = user_id);
 
 grant select, insert, update, delete on public.fornecedores to authenticated;
+

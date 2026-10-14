@@ -1,0 +1,233 @@
+.botao-tema {
+  position: fixed;
+  z-index: 300;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+  background: rgba(17, 24, 39, 0.5);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  backdrop-filter: blur(8px);
+}
+
+.botao-tema:hover {
+  background: rgba(17, 24, 39, 0.75);
+}
+
+/* Tema escuro: variáveis e correções para todos os componentes do site. */
+html[data-tema="escuro"] {
+  color-scheme: dark;
+  --fundo: #090f1c;
+  --cartao: #111827;
+  --texto: #e7edf7;
+  --texto-suave: #9aa8bd;
+  --borda: #2b374a;
+  --primaria: #7593ff;
+  --primaria-escura: #93a9ff;
+  --verde: #4ade80;
+  --verde-fundo: #10291d;
+  --vermelho: #fb7d7d;
+  --vermelho-fundo: #351a20;
+  --amarelo: #fbbf24;
+  --amarelo-fundo: #34290f;
+  --sombra: 0 12px 34px rgba(0, 0, 0, 0.28);
+}
+
+html[data-tema="escuro"] body {
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+html[data-tema="escuro"] .topo,
+html[data-tema="escuro"] .tela-login {
+  background: linear-gradient(135deg, #101b3c, #203d91);
+}
+
+html[data-tema="escuro"] .campo input,
+html[data-tema="escuro"] .campo select,
+html[data-tema="escuro"] .filtros input,
+html[data-tema="escuro"] .filtros select,
+html[data-tema="escuro"] .preco-campo > input,
+html[data-tema="escuro"] .preco-campo > select,
+html[data-tema="escuro"] .precificacoes-salvas input[type="search"],
+html[data-tema="escuro"] .preco-input-dinheiro,
+html[data-tema="escuro"] .preco-input-percentual,
+html[data-tema="escuro"] .preco-input-unidade,
+html[data-tema="escuro"] .tipo-botoes label,
+html[data-tema="escuro"] .botao-secundario,
+html[data-tema="escuro"] .botao-perigo,
+html[data-tema="escuro"] .botao-icone,
+html[data-tema="escuro"] .preco-opcoes label {
+  background: #151e2e;
+  color: var(--texto);
+}
+
+html[data-tema="escuro"] input::placeholder {
+  color: #718096;
+}
+
+html[data-tema="escuro"] .preco-input-dinheiro span,
+html[data-tema="escuro"] .preco-input-percentual span,
+html[data-tema="escuro"] .preco-input-unidade span,
+html[data-tema="escuro"] th {
+  background: #182235;
+  color: var(--texto-suave);
+}
+
+html[data-tema="escuro"] tbody tr:hover,
+html[data-tema="escuro"] .linha-selecionada,
+html[data-tema="escuro"] .comparacao-atual,
+html[data-tema="escuro"] .modulo-botao:hover,
+html[data-tema="escuro"] .botao-opcoes-avancadas:hover {
+  background: #18243a;
+}
+
+html[data-tema="escuro"] .modulo-botao span,
+html[data-tema="escuro"] .precificador-bloco-titulo > span {
+  background: #1d2c50;
+  color: #a9baff;
+}
+
+html[data-tema="escuro"] .modulo-botao.ativo span {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+html[data-tema="escuro"] .precificador-fonte {
+  border-color: #344667;
+  background: #151f32;
+}
+
+html[data-tema="escuro"] .precificador-selo {
+  background: #3a2d0d;
+  color: #ffd166;
+}
+
+html[data-tema="escuro"] .campo-fba-promocao {
+  border-color: #285c3a;
+  background: var(--verde-fundo);
+}
+
+html[data-tema="escuro"] .resultado-destaque {
+  background: linear-gradient(135deg, #1b347b, #3559c8 70%, #5275de);
+}
+
+html[data-tema="escuro"] .toast {
+  background: #e7edf7;
+  color: #111827;
+}
+
+html[data-tema="escuro"] .barra-fundo {
+  background: #253248;
+}
+
+html[data-tema="escuro"] .botao-tema {
+  border-color: var(--borda);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+@media (max-width: 520px) {
+  .botao-tema {
+    top: 9px;
+    right: 9px;
+  }
+
+  .botao-tema #textoTema {
+    display: none;
+  }
+}
+
+@media print {
+  .botao-tema,
+  .botao-opcoes-avancadas {
+    display: none !important;
+  }
+}
+
+
+/* Estrutura compartilhada e alvos de toque para telas Android. */
+html { color-scheme: light; -webkit-text-size-adjust: 100%; }
+html[data-tema="escuro"] { color-scheme: dark; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--primaria); outline-offset: 3px; }
+input, select, textarea, button, summary, a { -webkit-tap-highlight-color: transparent; }
+button, summary, a { touch-action: manipulation; }
+input[type="date"], input[type="month"] { min-width: 0; max-width: 100%; }
+.topo { padding: 24px 20px 60px; }
+.topo-conteudo, .container { width: min(1220px, calc(100% - 32px)); }
+.topo h1 { font-size: 26px; padding-right: 145px; }
+.topo p { font-size: 13px; }
+.conta-barra { margin-top: 12px; padding-top: 10px; }
+.conta-email { font-size: 12px; }
+.modulos-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 6px; margin-bottom: 24px; box-shadow: none; }
+.modulo-botao { display: flex; gap: 8px; align-items: center; justify-content: center; min-width: 0; min-height: 46px; padding: 9px; border: 0; border-radius: 10px; background: transparent; color: var(--texto-suave); font-size: 13px; font-weight: 700; }
+.modulo-botao span { font-size: 12px; }
+.modulo-botao.ativo { background: var(--primaria); color: #fff; }
+html[data-tema="escuro"] .modulo-botao.ativo, html[data-tema="escuro"] .botao-principal { color: #101827; }
+.modulo-botao span { background: transparent !important; color: inherit !important; }
+.cartao, section, aside, form { min-width: 0; }
+.botao-tema { min-width: 44px; min-height: 44px; }
+.preco-opcoes > label { background: transparent !important; }
+#moduloFinanceiro .tabela-container { overscroll-behavior-x: contain; }
+.tabela-precos { min-width: 0; max-width: 100%; overflow: auto; }
+@media (max-width: 700px) {
+  .topo { padding: 20px 0 58px; }
+  .topo-conteudo, .container { width: calc(100% - 24px); }
+  .topo h1 { font-size: 22px; padding-right: 44px; }
+  .topo p { max-width: 90%; font-size: 12px; }
+  .conta-barra { flex-direction: row; align-items: center; }
+  .conta-email { font-size: 11px; }
+  .botao-sair { min-height: 44px; }
+  .modulos-nav { gap: 2px; margin-bottom: 20px; }
+  .modulo-botao { flex-direction: column; gap: 5px; padding: 7px 3px; min-height: 58px; font-size: 11px; }
+  .modulo-botao span { font-size: 14px; }
+  .botao-tema { top: 8px; right: 10px; }
+  .botao-tema #textoTema { display: none; }
+  input, select, textarea { font-size: 16px; }
+  .campo input, .campo select, .filtros input, .filtros select { min-height: 46px; }
+  .login-cartao { padding: 22px 18px; width: 100%; }
+  .tela-login { padding: 70px 16px 30px; min-height: 100svh; }
+  .toast { max-width: calc(100vw - 32px); width: max-content; white-space: normal; bottom: max(16px, env(safe-area-inset-bottom)); }
+  #moduloFinanceiro .resumo { grid-template-columns: 1fr 1fr; gap: 10px; }
+  #moduloFinanceiro .cartao-resumo { padding: 16px 12px; min-height: 130px; }
+  #moduloFinanceiro .resumo-icone { display: none; }
+  #moduloFinanceiro .cartao-resumo .rotulo { max-width: 100%; }
+  #moduloFinanceiro .valor-resumo { font-size: 22px; }
+  #moduloFinanceiro #situacaoNegocio { font-size: 18px; }
+  #moduloFinanceiro .painel { padding: 16px; }
+  #moduloFinanceiro .campo input, #moduloFinanceiro .campo select, #moduloFinanceiro .filtros input, #moduloFinanceiro .filtros select { font-size: 16px; }
+  #moduloFinanceiro .botao-icone, #moduloFinanceiro .rodape-acoes button, #moduloFinanceiro .botao-secundario { min-height: 44px; font-size: 12px; }
+  #moduloFinanceiro .linha-campos { grid-template-columns: 1fr 1fr; }
+  #moduloFinanceiro .tabela-container, .tabela-precos { max-height: none; overflow: visible; border: 0; background: transparent; }
+  #moduloFinanceiro table, .tabela-precos table { display: block; min-width: 0; width: 100%; }
+  #moduloFinanceiro thead, .tabela-precos thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  #moduloFinanceiro tbody, .tabela-precos tbody { display: grid; gap: 12px; }
+  #moduloFinanceiro tbody tr, .tabela-precos tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; border: 1px solid var(--borda); border-radius: 10px; padding: 13px; background: var(--cartao); }
+  #moduloFinanceiro tbody td, .tabela-precos tbody td { display: block; min-width: 0; width: auto; padding: 0; border: 0; white-space: normal; overflow-wrap: anywhere; font-size: 13px; }
+  #moduloFinanceiro tbody td::before, .tabela-precos tbody td::before { content: attr(data-label); display: block; color: var(--texto-suave); font-size: 10px; margin-bottom: 4px; font-weight: 400; }
+  #moduloFinanceiro tbody td:nth-child(2), #moduloFinanceiro tbody td:last-child, .tabela-precos tbody td:first-child, .tabela-precos tbody td:last-child { grid-column: 1 / -1; }
+  #moduloFinanceiro tbody td:nth-child(2) { grid-row: 1; }
+  #moduloFinanceiro tbody td:nth-child(2) strong { font-size: 15px; }
+  #moduloFinanceiro tbody td:nth-child(6) strong { white-space: normal; }
+  #moduloFinanceiro .acoes-tabela, .tabela-precos .acoes-tabela { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tabela-precos .acoes-tabela button { min-height: 44px; }
+  #moduloFinanceiro .rodape-acoes { display: grid; grid-template-columns: 1fr 1fr; }
+  #moduloFinanceiro .rodape-acoes .botao-perigo { grid-column: 1 / -1; margin-left: 0; }
+}
+@media (max-width: 359px) {
+  .preco-duas-colunas, #moduloFinanceiro .linha-campos { grid-template-columns: 1fr; }
+  #moduloFinanceiro .resumo { grid-template-columns: 1fr; }
+  .fornecedores-filtros { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+}
+/* Mantém o contraste da aba ativa ao passar o mouse no tema escuro. */
+html[data-tema="escuro"] .modulo-botao.ativo:hover { background: var(--primaria); color: #101827; }
